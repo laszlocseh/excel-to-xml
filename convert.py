@@ -13,24 +13,37 @@ headersToNotTransform = ()
 mainElementName = "licence"
 
 inputFileData = get_data(afile=inputFile)
-xml = etree.Element('dataroot')
-root = etree.ElementTree(xml)
+document_node = etree.Element('dataroot')
+root = etree.ElementTree(document_node)
 
-xml.set("generated", str(datetime.datetime.now().replace(microsecond=0).isoformat()))
-for sheet in sheetsToTransform:
-    nodeNames = inputFileData[sheet][0]
-    for values in inputFileData[sheet][1:]:
-        mainElement = etree.SubElement(xml, mainElementName)
-        for index, nodeValue in enumerate(values):
-            if not headersToTransform and \
-                    (nodeNames[index] in headersToTransform
-                     or nodeNames[index] not in headersToNotTransform):
-                nodeNameNormalized = re.sub(r'[\W\s]', '', nodeNames[index])
-                elem = etree.SubElement(mainElement, nodeNameNormalized)
-                if isinstance(nodeValue, float):
-                    elem.text = "%.4f" % nodeValue
-                else:
-                    elem.text = str(nodeValue)
-        # item = etree.SubElement(node, "Year")
-        # item.text = "2015"
-    root.write(outputFile, encoding=None, method="xml", pretty_print=True)
+document_node.set("generated", str(datetime.datetime.now().replace(microsecond=0).isoformat()))
+
+
+def node_is_needed(name):
+    return (
+       not headersToTransform
+       or name in headersToTransform
+       ) \
+       and name not in headersToNotTransform
+
+
+def main():
+    for sheet in sheetsToTransform:
+        node_names = inputFileData[sheet][0]
+        sheet_data_rows = inputFileData[sheet][1:]
+        for row in sheet_data_rows:
+            main_element = etree.SubElement(document_node, mainElementName)
+            for index, node_value in enumerate(row):
+                node_name = node_names[index]
+                if node_is_needed(node_name):
+                    node_name_normalized = re.sub(r'[\W\s]', '', node_name)
+                    node = etree.SubElement(main_element, node_name_normalized)
+                    if isinstance(node_value, float):
+                        node.text = "%.4f" % node_value
+                    else:
+                        node.text = str(node_value)
+        root.write(outputFile, encoding=None, method="xml", pretty_print=True)
+
+
+if __name__ == "__main__":
+    main()
