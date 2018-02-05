@@ -1,29 +1,34 @@
 from pyexcel_xls import get_data
 from lxml import etree
 import re
+import os
+import datetime
 
 # settings
-inputFile = "LCP_extract_v3.1_xlsx.xlsx"
-outputFile = "LCP_v2_plantsdb.xml"
-sheetsToTransform = ("2015", )
-headersToTransform = ("MemberState", "ReferenceYear", "Unique_Plant_ID", "PlantName")
-mainElementName = "Plant"
+inputFile = os.path.join("inputs", "TEST-COMPANIES-Licences.xlsx")
+outputFile = os.path.join("outputs", "test-companies-new.xml")
+sheetsToTransform = ("Sheet2", )
+headersToTransform = ()
+headersToNotTransform = ()
+mainElementName = "licence"
 
 inputFileData = get_data(afile=inputFile)
 xml = etree.Element('dataroot')
 root = etree.ElementTree(xml)
 
-
+xml.set("generated", str(datetime.datetime.now().replace(microsecond=0).isoformat()))
 for sheet in sheetsToTransform:
     nodeNames = inputFileData[sheet][0]
     for values in inputFileData[sheet][1:]:
         mainElement = etree.SubElement(xml, mainElementName)
         for index, nodeValue in enumerate(values):
-            if nodeNames[index] in headersToTransform:
+            if not headersToTransform and \
+                    (nodeNames[index] in headersToTransform
+                     or nodeNames[index] not in headersToNotTransform):
                 nodeNameNormalized = re.sub(r'[\W\s]', '', nodeNames[index])
                 elem = etree.SubElement(mainElement, nodeNameNormalized)
                 if isinstance(nodeValue, float):
-                    elem.text = "%.2f" % nodeValue
+                    elem.text = "%.4f" % nodeValue
                 else:
                     elem.text = str(nodeValue)
         # item = etree.SubElement(node, "Year")
