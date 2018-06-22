@@ -5,19 +5,20 @@ import os
 import datetime
 
 # settings
-inputFile = os.path.join("inputs", "Thematic_Lookups_forEEA.xlsx")
-outputName = "EPRTR-LCP_C12.6"
-sheetsToTransform = ("new", )
-columnsToTransform = ()
+inputFolder = "inputs"
+inputFile = "PollutantCodeListValues_v2.xlsx"
+outputName = "EPRTR-LCP_"
+sheetsToTransform = ("E-PRTR", )
+columnsToTransform = () # leave empty to transform all columns
 columnsToNotTransform = ()
 dataElementName = "row"
 
 
 # init the xml file
-inputFileData = get_data(afile=inputFile)
+inputFileData = get_data(afile=os.path.join(inputFolder, inputFile))
 document_node = etree.Element('dataroot')
 root = etree.ElementTree(document_node)
-# set generated element in xml whith current datetime
+# add 'generated' attribute in xml whith current datetime
 document_node.set("generated", str(datetime.datetime.now().replace(microsecond=0).isoformat()))
 
 
