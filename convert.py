@@ -5,39 +5,47 @@ import os
 import datetime
 
 # settings
-inputFolder = "inputs"
-inputFile = "PollutantCodeListValues_v2.xlsx"
-outputName = "EPRTR-LCP_"
-sheetsToTransform = ("E-PRTR", )
-columnsToTransform = () # leave empty to transform all columns
-columnsToNotTransform = ()
-dataElementName = "row"
+input_folder = "inputs"
+input_file = "PollutantCodeListValues_v2.xlsx"
+output_name = "32EPRTR-LCP"
+# leave empty to transform all sheets
+sheets_to_transform = ("LCP", )
+# leave empty to transform all columns
+columns_to_transform = ("PollutantCode", )
+columns_to_not_transform = ()
+data_element_name = "row"
 
 
 # init the xml file
-inputFileData = get_data(afile=os.path.join(inputFolder, inputFile))
+input_file_data = get_data(afile=os.path.join(input_folder, input_file))
 document_node = etree.Element('dataroot')
 root = etree.ElementTree(document_node)
-# add 'generated' attribute in xml whith current datetime
-document_node.set("generated", str(datetime.datetime.now().replace(microsecond=0).isoformat()))
+
+# add 'generated' attribute to root element with current datetime
+current_date = str(datetime.datetime.now().replace(microsecond=0).isoformat())
+document_node.set("generated", current_date)
 
 
 # check if the column from excel is needed
 def node_is_needed(name):
     return (
-       not columnsToTransform
-       or name in columnsToTransform
+       not columns_to_transform
+       or name in columns_to_transform
        ) \
-       and name not in columnsToNotTransform
+       and name not in columns_to_not_transform
 
 
 def main():
-    for sheet in sheetsToTransform:
-        outputFileName = os.path.join("outputs", "{}_{}.xml".format(outputName, sheet))
-        node_names = inputFileData[sheet][0]
-        sheet_data_rows = inputFileData[sheet][1:]
+    sheets = sheets_to_transform or input_file_data.keys()
+
+    for sheet in sheets:
+        out_filename = "{}_{}.xml".format(output_name, sheet)
+        output_file = os.path.join("outputs", out_filename)
+
+        node_names = input_file_data[sheet][0]
+        sheet_data_rows = input_file_data[sheet][1:]
         for row in sheet_data_rows:
-            main_element = etree.SubElement(document_node, dataElementName)
+            main_element = etree.SubElement(document_node, data_element_name)
             for index, node_value in enumerate(row):
                 node_name = node_names[index]
                 if node_is_needed(node_name):
@@ -48,7 +56,11 @@ def main():
                     # else:
                     #     node.text = str(node_value)
                     node.text = str(node_value)
-        root.write(outputFileName, encoding=None, method="xml", pretty_print=True)
+
+        root.write(output_file,
+                   encoding=None,
+                   method="xml",
+                   pretty_print=True)
 
 
 if __name__ == "__main__":
