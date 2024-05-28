@@ -1,0 +1,3 @@
+pyexcel-xlsx
+lxml
+openpyxl==3.0.10

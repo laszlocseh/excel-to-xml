@@ -1,4 +1,4 @@
-from pyexcel_xls import get_data
+from pyexcel_xlsx import get_data
 from lxml import etree
 import re
 import os
@@ -6,19 +6,20 @@ import datetime
 
 # settings
 input_folder = "inputs"
-input_file = "Thematic_Lookups_v2_edited.xlsx"
-output_name = "EPRTR-LCP"
+input_file = "EEA_Regional_Indicators_WISE Marine2024_filled.xlsx"
+output_name = "EEA_Regional_Indicators"
 
 # leave empty to transform all sheets
-sheets_to_transform = ()
+sheets_to_transform = ["OSPAR EEA"]
 
 # leave empty to transform all columns
-columns_to_transform = ()
-columns_to_not_transform = ()
+columns_to_transform = []
+columns_to_not_transform = []
 data_element_name = "row"
 
 # init the input(excel) file
-input_file_data = get_data(afile=os.path.join(input_folder, input_file))
+with open(os.path.join(input_folder, input_file), 'rb') as file:
+    input_file_data = get_data(file)
 
 
 # check if the column from excel is needed
